@@ -45,14 +45,14 @@ func TestVendorWithMAC(t *testing.T) {
 	if err != nil {
 		t.Errorf("%v", mac)
 	}
-	if oui.VendorWithMAC(mac) != "NEXT_01:02:03" {
+	if oui.VendorWithMAC(mac) != "Next_01:02:03" {
 		t.Errorf("vendor for %q not found", mac)
 	}
 	mac, err = net.ParseMAC("00:05:ee:01:02:03")
 	if err != nil {
 		t.Errorf("%v", mac)
 	}
-	if oui.VendorWithMAC(mac) != "Vanderbilt_International_SWE_AB_01:02:03" {
+	if oui.VendorWithMAC(mac) != "Vanderbilt_International_Swe_01:02:03" {
 		t.Errorf("vendor for %q not found", mac)
 	}
 }

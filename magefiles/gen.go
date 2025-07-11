@@ -15,6 +15,8 @@ import (
 	"text/template"
 
 	"github.com/magefile/mage/mg"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 var codeTemplate = `
@@ -33,6 +35,99 @@ var vendors = []string{
 }
 
 `
+var caser = cases.Title(language.English)
+
+var sr = strings.NewReplacer(
+	",.",
+	"/",
+	".,",
+	"/",
+	". ,",
+	"/",
+	", .",
+	"/",
+	" . ",
+	"/",
+	". ",
+	"/",
+	" .",
+	"/",
+	".",
+	"/",
+	" , ",
+	"/",
+	", ",
+	"/",
+	" ,",
+	"/",
+	",",
+	"/",
+	" a ",
+	" ",
+	" & ",
+	" ",
+	"&",
+	" ",
+	"(",
+	"",
+	")",
+	"",
+	"'",
+	" ",
+	"-",
+	" ",
+	"*",
+	"",
+	"/",
+	"",
+)
+
+// https://github.com/wireshark/wireshark/blob/master/tools/make-manuf.py
+var terms = []string{
+	`a +s\b`,
+	`ab\b`,
+	`ag\b`,
+	`b ?v\b`,
+	`closed joint stock company\b`,
+	`co\b`,
+	`company\b`,
+	`corp\b`,
+	`corporation\b`,
+	`corporate\b`,
+	`de c ?v\b`,
+	`gmbh\b`,
+	`holding\b`,
+	`inc\b`,
+	`incorporated\b`,
+	`jsc\b`,
+	`kg\b`,
+	`k k\b`,
+	`limited\b`,
+	`llc\b`,
+	`ltd\b`,
+	`n ?v\b`,
+	`oao\b`,
+	`of\b`,
+	`open joint stock company\b`,
+	`ooo\b`,
+	`oü\b`,
+	`oy\b`,
+	`oyj\b`,
+	`plc\b`,
+	`pty\b`,
+	`pvt\b`,
+	`s ?a ?r ?l\b`,
+	`s ?a\b`,
+	`s ?p ?a\b`,
+	`sp ?k\b`,
+	`s ?r ?l\b`,
+	`systems\b`,
+	`\bthe\b`,
+	`zao\b`,
+	`z ?o ?o\b`,
+}
+
+var pattern = regexp.MustCompile(`(?i)\b(?:` + strings.Join(terms, "|") + `)`)
 
 type templateData struct {
 	Entries []entry
@@ -133,6 +228,11 @@ func newTemplateData(r io.Reader) *templateData {
 		v := strings.TrimSpace(record[2])
 		v = strings.ReplaceAll(v, `"`, "")
 		v = simplifyName(v)
+		v = pattern.ReplaceAllString(v, "")
+		v = sr.Replace(v)
+		v = strings.Join(strings.Fields(v), " ")
+		v = caser.String(v)
+		v = strings.TrimSpace(strings.ReplaceAll(v, "/", ""))
 
 		if prev, ok := ouiMap[o]; ok { // 080030 is a known duplicate
 			log.Printf("Warning %q:%q is already registered to %q", o, v, prev)

@@ -12,37 +12,6 @@ import (
 	"strings"
 )
 
-var sr = strings.NewReplacer(
-	",.",
-	"_",
-	".,",
-	"_",
-	". ,",
-	"_",
-	", .",
-	"_",
-	".",
-	"_",
-	",",
-	"_",
-	"&",
-	"",
-	" ",
-	"_",
-	"(",
-	"",
-	")",
-	"",
-	"'",
-	"_",
-	"\"",
-	"_",
-	"-",
-	"_",
-	"*",
-	"",
-)
-
 //go:generate mage -v build
 
 // Vendor returns the Vendor of the OUI s, or the empty string if
@@ -93,7 +62,7 @@ func VendorFromMAC(hw net.HardwareAddr) string {
 func VendorWithMAC(hw net.HardwareAddr) string {
 	vendor := Vendor(hw.String())
 	if vendor != "" {
-		vendor = strings.Trim(sr.Replace(vendor), "_")
+		vendor = strings.ReplaceAll(vendor, " ", "_")
 		return vendor + "_" + hw.String()[9:]
 	}
 	return hw.String()
