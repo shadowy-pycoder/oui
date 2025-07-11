@@ -12,20 +12,52 @@ import (
 	"strings"
 )
 
+var sr = strings.NewReplacer(
+	",.",
+	"_",
+	".,",
+	"_",
+	". ,",
+	"_",
+	", .",
+	"_",
+	".",
+	"_",
+	",",
+	"_",
+	"&",
+	"",
+	" ",
+	"_",
+	"(",
+	"",
+	")",
+	"",
+	"'",
+	"_",
+	"\"",
+	"_",
+	"-",
+	"_",
+	"*",
+	"",
+)
+
 //go:generate mage -v build
 
 // Vendor returns the Vendor of the OUI s, or the empty string if
 // not found. The value s can be either just the OUI or a mac address,
 // it can also include or exclude the ":" delimiters. Any of the
 // following are valid inputs:
-//     0A:0B:0C
-//     0a:0b:0c
-//     0A0B0C
-//     0a0b0c
-//     0A:0B:0C:01:02:03
-//     0a:0b:0c:01:02:03
-//     0A0B0C010203
-//     0a0b0c010203
+//
+//	0A:0B:0C
+//	0a:0b:0c
+//	0A0B0C
+//	0a0b0c
+//	0A:0B:0C:01:02:03
+//	0a:0b:0c:01:02:03
+//	0A0B0C010203
+//	0a0b0c010203
 func Vendor(s string) string {
 	s = strings.ReplaceAll(s, ":", "")
 
@@ -55,4 +87,14 @@ func Vendor(s string) string {
 // bits of both.
 func VendorFromMAC(hw net.HardwareAddr) string {
 	return Vendor(hw.String())
+}
+
+// VendorWithMAC concatenates vendor with MAC address (e.g. NEXT_01:02:03)
+func VendorWithMAC(hw net.HardwareAddr) string {
+	vendor := Vendor(hw.String())
+	if vendor != "" {
+		vendor = strings.Trim(sr.Replace(vendor), "_")
+		return vendor + "_" + hw.String()[9:]
+	}
+	return hw.String()
 }
