@@ -1,5 +1,8 @@
-module github.com/endobit/oui
+module github.com/shadowy-pycoder/oui
 
-go 1.17
+go 1.24.1
 
-require github.com/magefile/mage v1.14.0 // indirect
+require (
+	github.com/endobit/oui v0.5.0
+	github.com/magefile/mage v1.14.0
+)
